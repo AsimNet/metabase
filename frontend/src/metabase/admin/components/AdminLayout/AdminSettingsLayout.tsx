@@ -51,6 +51,7 @@ const useScrollToTop = (contentRef: React.RefObject<HTMLDivElement | null>) => {
   const { location } = useRouter();
 
   useEffect(() => {
+    // FIXME: This causes the "AI settings" page to scroll to the top when changing Metabot Settings tabs
     contentRef.current?.scrollTo(0, 0);
   }, [location?.pathname, contentRef]);
 };

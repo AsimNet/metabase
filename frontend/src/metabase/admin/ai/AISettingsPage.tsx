@@ -10,6 +10,7 @@ import { useAdminSetting } from "metabase/api/utils";
 import { ExternalLink } from "metabase/common/components/ExternalLink";
 import { Link } from "metabase/common/components/Link";
 import { LoadingAndErrorWrapper } from "metabase/common/components/LoadingAndErrorWrapper";
+import { UpsellGem } from "metabase/common/components/upsells/components/UpsellGem";
 import { useDocsUrl, useSetting } from "metabase/common/hooks";
 import { FIXED_METABOT_IDS } from "metabase/metabot/constants";
 import {
@@ -19,6 +20,7 @@ import {
 import { useRouter } from "metabase/router/useRouter";
 import { Divider, Flex, Stack, Switch, Tabs } from "metabase/ui";
 
+import { EmbeddedMetabotUpsell } from "./EmbeddedMetabotUpsell";
 import { McpAppsSettings } from "./McpAppsSettings";
 import { MetabotSettingsPanel } from "./MetabotSettingsPanel";
 import { MetabotSetup } from "./MetabotSetup";
@@ -60,9 +62,7 @@ export function AISettingsPage() {
 
   const { url: agentApiDocsUrl } = useDocsUrl("ai/agent-api");
 
-  const selectedTab = getSelectedMetabotTab(params.metabotId, pathname, {
-    hasEmbedding,
-  });
+  const selectedTab = getSelectedMetabotTab(params.metabotId, pathname);
 
   const handleAiFeaturesEnabledChange = async (checked: boolean) => {
     await updateAiSetting({
@@ -137,40 +137,43 @@ function MetabotSettingsSection({
   selectedTab: MetabotTabValue;
 }) {
   const { data, isLoading, error } = useListMetabotsQuery();
+  const shouldShowUpsell = !hasEmbedding && selectedTab === "embedded";
   const activeMetabotId =
     selectedTab === "embedded"
       ? FIXED_METABOT_IDS.EMBEDDED
       : FIXED_METABOT_IDS.DEFAULT;
-  const activeMetabot = data?.items.find((m) => m.id === activeMetabotId);
-  const showTabs = hasEmbedding;
+  const activeMetabot = !shouldShowUpsell
+    ? data?.items.find((m) => m.id === activeMetabotId)
+    : null;
 
   return (
     <SettingsSection id={id} title={t`Metabot settings`}>
-      {showTabs && (
-        <Tabs value={selectedTab}>
-          <Tabs.List>
-            <Tabs.Tab
-              renderRoot={(props) => (
-                <Link {...props} to={getMetabotTabPath("internal")} />
-              )}
-              value="internal"
-            >
-              {t`Internal`}
-            </Tabs.Tab>
-            <Tabs.Tab
-              renderRoot={(props) => (
-                <Link {...props} to={getMetabotTabPath("embedded")} />
-              )}
-              value="embedded"
-            >
-              {t`Embedded`}
-            </Tabs.Tab>
-          </Tabs.List>
-        </Tabs>
-      )}
+      <Tabs value={selectedTab}>
+        <Tabs.List>
+          <Tabs.Tab
+            renderRoot={(props) => (
+              <Link {...props} to={getMetabotTabPath("internal")} />
+            )}
+            value="internal"
+          >
+            {t`Internal`}
+          </Tabs.Tab>
+          <Tabs.Tab
+            renderRoot={(props) => (
+              <Link {...props} to={getMetabotTabPath("embedded")} />
+            )}
+            value="embedded"
+            rightSection={!hasEmbedding && <UpsellGem.New size={14} />}
+          >
+            {t`Embedded`}
+          </Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
 
       {activeMetabot ? (
         <MetabotSettingsPanel metabot={activeMetabot} />
+      ) : shouldShowUpsell ? (
+        <EmbeddedMetabotUpsell />
       ) : (
         <LoadingAndErrorWrapper
           loading={isLoading}
@@ -241,16 +244,10 @@ function DisabledSection({
 function getSelectedMetabotTab(
   metabotId: string | undefined,
   pathname: string,
-  {
-    hasEmbedding,
-  }: {
-    hasEmbedding: boolean;
-  },
 ): MetabotTabValue {
   if (
-    (metabotId === String(FIXED_METABOT_IDS.EMBEDDED) ||
-      pathname === EMBEDDED_METABOT_PATH) &&
-    hasEmbedding
+    metabotId === String(FIXED_METABOT_IDS.EMBEDDED) ||
+    pathname === EMBEDDED_METABOT_PATH
   ) {
     return "embedded";
   }
