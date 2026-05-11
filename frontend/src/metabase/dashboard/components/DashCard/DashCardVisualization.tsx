@@ -19,14 +19,7 @@ import { EmbeddingEntityContextProvider } from "metabase/embedding/context";
 import { PLUGIN_CONTENT_TRANSLATION } from "metabase/plugins";
 import { useDispatch, useSelector } from "metabase/redux";
 import { getSetting } from "metabase/selectors/settings";
-import {
-  Flex,
-  Group,
-  type IconName,
-  type IconProps,
-  Menu,
-  Title,
-} from "metabase/ui";
+import { Flex, Group, type IconProps, Menu, Title } from "metabase/ui";
 import { isVirtualDashCard } from "metabase/utils/dashboard";
 import { measureTextWidth } from "metabase/utils/measure-text";
 import { getVisualizationRaw, isCartesianChart } from "metabase/visualizations";
@@ -60,6 +53,7 @@ import type {
   DashboardCard,
   Dataset,
   DatasetData,
+  IconName,
   RawSeries,
   Series,
   VirtualCardDisplay,

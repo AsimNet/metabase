@@ -21,11 +21,10 @@ import {
   Flex,
   type FlexProps,
   Icon,
-  type IconName,
   Text,
   Tooltip,
 } from "metabase/ui";
-import type { MetabotFeedback } from "metabase-types/api";
+import type { IconName, MetabotFeedback } from "metabase-types/api";
 
 import { AIMarkdown } from "../AIMarkdown/AIMarkdown";
 
