@@ -1,3 +1,4 @@
+import type { LocationDescriptorObject } from "history";
 import type { ReactNode } from "react";
 import { jt, t } from "ttag";
 
@@ -19,6 +20,8 @@ import {
 } from "metabase/plugins";
 import { useRouter } from "metabase/router/useRouter";
 import { Divider, Flex, Stack, Switch, Tabs } from "metabase/ui";
+
+import { preventScrollToTop } from "../components/AdminLayout/util";
 
 import { EmbeddedMetabotUpsell } from "./EmbeddedMetabotUpsell";
 import { McpAppsSettings } from "./McpAppsSettings";
@@ -255,9 +258,12 @@ function getSelectedMetabotTab(
   return "internal";
 }
 
-function getMetabotTabPath(tab: MetabotTabValue) {
+function getMetabotTabPath(tab: MetabotTabValue): LocationDescriptorObject {
   const pathname =
     tab === "embedded" ? EMBEDDED_METABOT_PATH : DEFAULT_METABOT_PATH;
 
-  return `${pathname}#${METABOT_SECTION_ID}`;
+  return preventScrollToTop({
+    pathname,
+    hash: `#${METABOT_SECTION_ID}`,
+  });
 }
