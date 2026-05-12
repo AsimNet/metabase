@@ -167,7 +167,7 @@ describe("scenarios > admin > settings > user provisioning", () => {
       });
 
       cy.log(
-        "should show error when scim token fails to generate when scim is enabled",
+        "should show warning Alert and Generate button when scim is enabled without a token",
       );
       // enable scim and stop mocking get scim api key request
       cy.intercept("GET", "/api/ee/scim/api_key", (req) => {
@@ -176,23 +176,37 @@ describe("scenarios > admin > settings > user provisioning", () => {
       cy.request("PUT", "api/setting/scim-enabled", { value: true });
       cy.visit("/admin/settings/authentication/user-provisioning");
       H.main().within(() => {
-        cy.findByText("Token failed to generate, please regenerate one.");
+        cy.findByText(
+          "Token failed to generate, please regenerate one.",
+        ).should("not.exist");
+        cy.findByText(
+          "Generate a SCIM token below to complete the setup.",
+        ).should("exist");
+        cy.findByRole("button", { name: /Generate/ }).should("exist");
       });
 
-      cy.log("should show error when scim token fails to regenerate");
+      cy.log(
+        "should show error and Retry button when scim token generation fails",
+      );
       cy.intercept("POST", "/api/ee/scim/api_key", {
         statusCode: 500,
         body: { message: "An error occurred" },
       });
-      cy.findByRole("button", { name: /Regenerate/ }).click();
-
-      H.modal().within(() => {
-        cy.findByText("Regenerate token?").should("exist");
-        cy.findByRole("button", { name: /Regenerate now/ }).click();
-      });
+      cy.findByRole("button", { name: /Generate/ }).click();
 
       H.modal().within(() => {
         cy.findByText("An error occurred");
+        cy.findByRole("button", { name: /Done/ }).click();
+      });
+
+      H.main().within(() => {
+        cy.findByText(
+          "Token failed to generate, please regenerate one.",
+        ).should("exist");
+        cy.findByText(
+          "Generate a SCIM token below to complete the setup.",
+        ).should("not.exist");
+        cy.findByRole("button", { name: /Retry/ }).should("exist");
       });
     });
   });
